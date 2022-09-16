@@ -7,6 +7,7 @@ import { Entypo } from '@expo/vector-icons';
 import { Background } from '../../components/Background';
 import { Heading } from '../../components/Heading';
 import { AdCard, AdCardProps } from '../../components/AdCard';
+import { AdMatch } from '../../components/AdMatch';
 
 import { GameParams } from '../../@types/navigation';
 
@@ -26,11 +27,18 @@ export function Game() {
 
   const route = useRoute();
   const game = route.params as GameParams;
-
   const navigation = useNavigation();
 
   function handleGoBack() {
     navigation.goBack();
+  }
+  
+  const [discordDuoSelected, setDiscordDuoSelected] = useState('');
+
+  async function getDiscordUser(adsId: string) {
+    fetch(`http://10.0.0.106:3333/ads/${adsId}/discord`)
+    .then(response => response.json())
+    .then(data => setDiscordDuoSelected(data.discord))
   }
 
   return (
@@ -64,15 +72,26 @@ export function Game() {
           data={ads}
           keyExtractor={item => item.id}
           renderItem={({item}) => (
-            <AdCard data={item} onConnect={() => {}}/>
+            <AdCard
+              data={item}
+              onConnect={() => getDiscordUser(item.id)}
+            />
           )}
           horizontal
           style={styles.containerList}
           contentContainerStyle={[ads.length > 0 ? styles.contentList : styles.emptyListContent]}
           showsHorizontalScrollIndicator={false}
           ListEmptyComponent={() => (
-            <Text style={styles.emptyListText}>Não há anúncios publicados ainda :(</Text>
+            <Text style={styles.emptyListText}>
+              Não há anúncios publicados ainda :(
+            </Text>
           )}
+        />
+
+        <AdMatch
+          visible={discordDuoSelected.length > 0}
+          discord={discordDuoSelected}
+          onClose={() => setDiscordDuoSelected('')}
         />
       </SafeAreaView>
     </Background>
